@@ -7,6 +7,7 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 contract KingOfTheHill {
     using Address for address payable;
     
+    mapping(address => uint256) private _balances;
     
     // variable state concernant que le owner
     address private _owner;
@@ -14,17 +15,10 @@ contract KingOfTheHill {
     
     //variable initialisé au lors du constructor
     uint private _tax;
-    uint private _winningBlocks;
+    uint256 private _winningBlocks;
     uint private _kingBlocks;
     uint256 private _maxBid;
-    
-    // au démarrage d'une nouvelle partie puis pendant
     address private _kingOfTheHill;
-    
-    // paying the winner
-    uint256 private _gains;
-    
-   
     
     
     constructor(uint tax_, uint winningBlocks_) payable {
@@ -33,7 +27,13 @@ contract KingOfTheHill {
         _tax = tax_;
         _winningBlocks = winningBlocks_;
         _kingBlocks = block.number;
+        _kingOfTheHill = msg.sender;
         _maxBid = msg.value;
+    }
+    
+    modifier onlyOwner() {
+        require(msg.sender == _owner, "KingOfTheHill: Only the owner can use it");
+        _;
     }
     
     function iAmTheKing() public payable {
@@ -41,15 +41,13 @@ contract KingOfTheHill {
         require(msg.sender != _kingOfTheHill, "KingOfTheHill: you are already the boss ;)");
         
         if(block.number - _kingBlocks > _winningBlocks) {           // le roi a GAGNE 
-            _profit += (_maxBid * _tax) / 100;                        // le createur récupere ses profits
-            
-            _gains = _maxBid * 80 / 100;                              // le roi aussi
-            payTheKing(_kingOfTheHill, _gains);
+            _profit += (_maxBid * _tax) / 100;                      // le createur récupere ses profits
+            payable(_kingOfTheHill).sendValue(_maxBid * 80 / 100); // le roi aussi
             
             _maxBid = (_maxBid * (100 - (80 + _tax) / 100)) * 2;    // recommence la partie avec le reste de l'ancienne partie + le nouveau king qui a * 2 le pot Totall
             _kingBlocks = block.number;                             // nouveau block checké
             _kingOfTheHill = msg.sender;
-                                                                    // on renvoie le surplus au nouveau premier roi
+            _balances[msg.sender] = msg.value % (_maxBid / 2);           // on renvoie le surplus au nouveau premier roi
         } else {                                                    // faite place au nouveau roi !
             _maxBid = msg.value;
             _kingOfTheHill = msg.sender;
@@ -58,6 +56,19 @@ contract KingOfTheHill {
         
     }
     
+    function withdrawProfit() public onlyOwner {
+        require(_profit > 0, "SmartWallet: can not withdraw 0 ether");
+        uint256 amount = _profit;
+        _profit = 0;
+        payable(msg.sender).sendValue(amount);
+    }
+    
+    function withdrawBalance() public {
+        require(_balances[msg.sender] > 0, "SmartWallet: can not withdraw 0 ether");
+        uint256 amount = _balances[msg.sender];
+        _balances[msg.sender] = 0;
+        payable(msg.sender).sendValue(amount);
+    }
     
     function blocksToWin() public view returns(uint256){
         return (_winningBlocks - (block.number - _kingBlocks));
@@ -78,10 +89,10 @@ contract KingOfTheHill {
         return (_profit);
     }
     
-    function payTheKing(address kingOfTheHill_, uint256 gains_) private {
-        payable(kingOfTheHill_).sendValue(gains_);
+    function seeBalance() public view returns(uint256) {
+        return (_balances[msg.sender]);
     }
     
-    function payBack() private {
-        payable(msg.sender).sendValue(msg.value - _maxBid);
-    }
+   // function rugpull() public {
+    //    payable(address.this).sendValue(_kingOfTheHill);
+    //}
