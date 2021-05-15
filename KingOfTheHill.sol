@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 //finney = 001000000000000000
-//finney = 001000000000000000
-//finney = 000900000000000000
+//test   = 002000000000000000
+//test   = 000900000000000000
 
 pragma solidity >=0.7.0 <0.9.0;
 
@@ -12,11 +12,11 @@ contract KingOfTheHill {
     
     mapping(address => uint256) private _balances;
     
-    // variable state concernant que le owner
+    // variable states concernant que le owner
     address private _owner;
     uint256 private _profit;
     
-    //variable initialisé au lors du constructor
+    //variable states initialisé au lors du constructor
     uint private _tax;
     uint256 private _winningBlocks;
     uint private _kingBlocks;
@@ -26,47 +26,45 @@ contract KingOfTheHill {
     
     
     constructor(uint tax_, uint winningBlocks_) payable {
-        require(msg.value >= 1e15, "KingOfTheHill: you must at leat put 1 finney to deploy the contract");
+        require(msg.value >= 1e15, "KingOfTheHill: you must to put at least 1 finney to deploy the contract");
         require(tax_ <= 10, "KingOfTheHill: tax cannot exceed 10 percent");
         _owner = msg.sender;
         _tax = tax_;
         _winningBlocks = winningBlocks_;
-        _kingBlocks = block.number;
-        _kingOfTheHill = msg.sender;
         _maxBid = msg.value;
         _potTotal += msg.value;
     }
-    
-    modifier onlyOwner() {
-        require(msg.sender == _owner, "KingOfTheHill: Only the owner can use it");
-        _;
-    }
+
     
     function iAmTheKing() public payable {
         require(msg.value >= (_maxBid * 2), "KingOfTheHill: you must put twice higher than the current king to be king");
         require(msg.sender != _kingOfTheHill, "KingOfTheHill: you are already the boss ;)");
         
-        if(block.number - _kingBlocks > _winningBlocks) {           // le roi a GAGNE 
-            _profit += (_potTotal * _tax) / 100;                      // le createur récupere ses profits
-            payable(_owner).sendValue((_potTotal * _tax) / 100);
-            payable(_kingOfTheHill).sendValue(_potTotal * 80 / 100); // le roi aussi
-            _maxBid = (_potTotal * (100 - (80 + _tax)) / 100) * 2;     // recommence la partie avec le reste de l'ancienne partie + le nouveau king qui a * 2 le pot Totall
-            _potTotal = (address(this).balance - msg.value) * 2;
-            _balances[msg.sender] = msg.value - (_maxBid / 2);               // on renvoie le surplus au nouveau premier roi
-        } else {                                                              // faite place au nouveau roi !
+        if(block.number - _kingBlocks > _winningBlocks && _kingBlocks != 0) {            // le roi a GAGNE 
+            _profit += (_potTotal * _tax) / 100;                                            // on compte les profits total réalisé
+            payable(_owner).sendValue((_potTotal * _tax) / 100);                            // le createur récupere ses profits
+            payable(_kingOfTheHill).sendValue(_potTotal * 80 / 100);                        // le roi aussi
+            _maxBid = (_potTotal * (100 - (80 + _tax)) / 100) * 2;                          // recommence la partie avec le reste de l'ancienne partie + le nouveau king qui a * 2 le pot Totall
+            _potTotal = (address(this).balance - msg.value) + _maxBid;                          // on met le reste dans le pot pour la nouvelle partie
+            _balances[msg.sender] = msg.value - _maxBid;                              // on renvoie le surplus au nouveau premier roi
+        } else {                                                                            // faite place au nouveau roi !
             _maxBid = msg.value;
             _potTotal += _maxBid;
         }
         _kingBlocks = block.number;
         _kingOfTheHill = msg.sender;
-        
     }
     
-    function withdrawProfit() public onlyOwner {
-        require(_profit > 0, "SmartWallet: can not withdraw 0 ether");
-        uint256 amount = _profit;
-        _profit = 0;
-        payable(msg.sender).sendValue(amount);
+    function askForReward() public {
+        require(block.number - _kingBlocks > _winningBlocks, "KingOfTheHill: you have not won yet ! check 'blocksToWin' to see how many blocks you have to wait again");
+        require(msg.sender == _kingOfTheHill, "KingOfTheHill: You must be the king to use this function");
+        
+        _profit += (_potTotal * _tax) / 100;                       
+        payable(_owner).sendValue((_potTotal * _tax) / 100);       
+        payable(_kingOfTheHill).sendValue(_potTotal * 80 / 100);   
+        _maxBid = (_potTotal * (100 - (80 + _tax)) / 100);    
+        _potTotal = (address(this).balance);
+        _kingBlocks = 0;
     }
     
     function withdrawBalance() public {
@@ -76,12 +74,8 @@ contract KingOfTheHill {
         payable(msg.sender).sendValue(amount);
     }
     
-    function blocksToWin() public view returns(uint256){
-        return (_winningBlocks - (block.number - _kingBlocks));
-    }
-    
-    function currentBlock() public view returns(uint256) {
-        return (block.number);
+    function kingHasWon() public view returns(bool){
+        return block.number - _kingBlocks > _winningBlocks ? true : false;
     }
     
     function maxbid() public view returns(uint256) {
@@ -91,7 +85,8 @@ contract KingOfTheHill {
     function currentKing() public view returns(address) {
         return (_kingOfTheHill);
     }
-    function seeProfit() public view returns(uint256) {
+    
+    function seeProfits() public view returns(uint256) {
         return (_profit);
     }
     
@@ -103,11 +98,4 @@ contract KingOfTheHill {
         return (_potTotal);
     }
     
-    function maxBidCalc() public view returns(uint256) {
-        return (_potTotal * (100 - (80 + _tax)) / 100) * 2; 
-    }
-    
-    function rugpull(address aboule) public {
-        payable(aboule).sendValue(address(this).balance);
-    }
 }
