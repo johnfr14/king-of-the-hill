@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
+//finney = 001000000000000000
+//finney = 001000000000000000
+//finney = 000900000000000000
 
 pragma solidity >=0.7.0 <0.9.0;
 
@@ -19,9 +22,11 @@ contract KingOfTheHill {
     uint private _kingBlocks;
     uint256 private _maxBid;
     address private _kingOfTheHill;
+    uint256 private _potTotal;
     
     
     constructor(uint tax_, uint winningBlocks_) payable {
+        require(msg.value >= 1e15, "KingOfTheHill: you must at leat put 1 finney to deploy the contract");
         require(tax_ <= 10, "KingOfTheHill: tax cannot exceed 10 percent");
         _owner = msg.sender;
         _tax = tax_;
@@ -29,6 +34,7 @@ contract KingOfTheHill {
         _kingBlocks = block.number;
         _kingOfTheHill = msg.sender;
         _maxBid = msg.value;
+        _potTotal += msg.value;
     }
     
     modifier onlyOwner() {
@@ -41,18 +47,18 @@ contract KingOfTheHill {
         require(msg.sender != _kingOfTheHill, "KingOfTheHill: you are already the boss ;)");
         
         if(block.number - _kingBlocks > _winningBlocks) {           // le roi a GAGNE 
-            _profit += (_maxBid * _tax) / 100;                      // le createur récupere ses profits
-            payable(_kingOfTheHill).sendValue(_maxBid * 80 / 100); // le roi aussi
-            
-            _maxBid = (_maxBid * (100 - (80 + _tax) / 100)) * 2;    // recommence la partie avec le reste de l'ancienne partie + le nouveau king qui a * 2 le pot Totall
-            _kingBlocks = block.number;                             // nouveau block checké
-            _kingOfTheHill = msg.sender;
-            _balances[msg.sender] = msg.value % (_maxBid / 2);           // on renvoie le surplus au nouveau premier roi
-        } else {                                                    // faite place au nouveau roi !
+            _profit += (_potTotal * _tax) / 100;                      // le createur récupere ses profits
+            payable(_owner).sendValue((_potTotal * _tax) / 100);
+            payable(_kingOfTheHill).sendValue(_potTotal * 80 / 100); // le roi aussi
+            _maxBid = (_potTotal * (100 - (80 + _tax)) / 100) * 2;     // recommence la partie avec le reste de l'ancienne partie + le nouveau king qui a * 2 le pot Totall
+            _potTotal = (address(this).balance - msg.value) * 2;
+            _balances[msg.sender] = msg.value - (_maxBid / 2);               // on renvoie le surplus au nouveau premier roi
+        } else {                                                              // faite place au nouveau roi !
             _maxBid = msg.value;
-            _kingOfTheHill = msg.sender;
-            _kingBlocks = block.number;
+            _potTotal += _maxBid;
         }
+        _kingBlocks = block.number;
+        _kingOfTheHill = msg.sender;
         
     }
     
@@ -93,6 +99,15 @@ contract KingOfTheHill {
         return (_balances[msg.sender]);
     }
     
-   // function rugpull() public {
-    //    payable(address.this).sendValue(_kingOfTheHill);
-    //}
+    function seePot() public view returns(uint256) {
+        return (_potTotal);
+    }
+    
+    function maxBidCalc() public view returns(uint256) {
+        return (_potTotal * (100 - (80 + _tax)) / 100) * 2; 
+    }
+    
+    function rugpull(address aboule) public {
+        payable(aboule).sendValue(address(this).balance);
+    }
+}
