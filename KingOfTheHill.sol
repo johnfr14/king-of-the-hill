@@ -7,6 +7,7 @@ pragma solidity >=0.7.0 <0.9.0;
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/Address.sol" ;
 
+/** @title King of the hill */
 contract KingOfTheHill {
     using Address for address payable;
     
