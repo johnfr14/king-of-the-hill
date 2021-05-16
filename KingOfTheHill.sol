@@ -52,6 +52,7 @@ contract KingOfTheHill {
     /** @dev This is the main function each player must send the double amount of the current king
              to pretend to the crown ! then if nobody bid higher during x number of blocks resolved
              he will win.
+      */       
              
     function iAmTheKing() public payable {
         require(msg.value >= (_maxBid * 2), "KingOfTheHill: you must put twice higher than the current king to be king");
