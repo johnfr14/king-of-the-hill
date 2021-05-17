@@ -62,6 +62,12 @@ contract KingOfTheHill {
         _chess += msg.value;
     }
     
+    receive() external payable {
+        revert("You cannot send ether directly to this smart-contract, use iAmTheKing instead");
+    }
+
+    fallback() external {}
+    
     event NewKing(address indexed newKing, uint256 amount);
     event HasWon(address indexed king, uint256 amount);
     event Withdrew(address indexed sender, uint256 amount);
