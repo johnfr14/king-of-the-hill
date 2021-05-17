@@ -1,7 +1,7 @@
 # king-of-the-hill
 ![KOTH](./koth.png)
 
-**url contract deployment** : https://rinkeby.etherscan.io/address/0x49d2bf95fbc1d381d1960bf768abec2c09ae08fc
+**url contract deployment** : https://rinkeby.etherscan.io/address/0x1e096c89701b52d61fb53adfcc508ec736d64c21
 
 **network** : rinkeby
 
