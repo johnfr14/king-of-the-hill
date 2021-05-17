@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
 //finney = 001000000000000000
-//test   = 002000000000000000
-//test   = 000900000000000000
 
 pragma solidity >=0.7.0 <0.9.0;
 
