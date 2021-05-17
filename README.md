@@ -29,8 +29,6 @@ warrior to take the chess that contain the seed.
 ```js
 // SPDX-License-Identifier: GPL-3.0
 //finney = 001000000000000000
-//test   = 002000000000000000
-//test   = 000900000000000000
 
 pragma solidity >=0.7.0 <0.9.0;
 
@@ -43,11 +41,11 @@ contract KingOfTheHill {
     
     mapping(address => uint256) private _balances;
     
-    // variable states concernant que le owner
+    // states concerning the owner only
     address private _owner;
     uint256 private _profit;
     
-    // variable states initialisé au lors du constructor
+    // states initialized in the constructor
     uint private _tax; //                   : the tax that will be given to the owner for each game.
     uint256 private _winningBlocks; //      : the required numbers of blocks resolved, to win the game.
     uint private _kingBlocks; //            : the block where the last king has took position.
@@ -88,7 +86,7 @@ contract KingOfTheHill {
      *      NEW KING !
      * 
      *      1.We reset all the king's status [_maxbid, _potTotal, _kingBlocks, _kingOfTheHill]
-    */       
+     */       
              
     function iAmTheKing() public payable {
         require(msg.value >= (_chess * 2), "KingOfTheHill: you must put twice higher than the current king to be king");
