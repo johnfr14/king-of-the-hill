@@ -128,7 +128,6 @@ contract KingOfTheHill {
         _kingBlocks = 0;
     }
     
-    
     /**
      * @dev withdraw balance :
      *      withdraw the extra ether.
@@ -140,6 +139,7 @@ contract KingOfTheHill {
         payable(msg.sender).sendValue(amount);
         emit Withdrew(msg.sender, amount);
     }
+    
     /**
      * @dev calls kingHasWon 
      * @return : return true or false depending if the king Has won the game
@@ -178,6 +178,5 @@ contract KingOfTheHill {
      */
     function seePot() public view returns(uint256) {
         return (_chess);
-    }
-    
+    }   
 }
