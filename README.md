@@ -92,15 +92,15 @@ contract KingOfTheHill {
         require(msg.value >= (_chess * 2), "KingOfTheHill: you must put twice higher than the current king to be king");
         require(msg.sender != _kingOfTheHill, "KingOfTheHill: you are already the boss ;)");
         
-        if(block.number - _kingBlocks > _winningBlocks && _kingBlocks != 0) {            // le roi a GAGNE 
-            _profit += (_chess * _tax) / 100;                                            // on compte les profits total réalisé
-            payable(_owner).sendValue((_chess * _tax) / 100);                            // le createur récupere ses profits
+        if(block.number - _kingBlocks > _winningBlocks && _kingBlocks != 0) {            
+            _profit += (_chess * _tax) / 100;                                          
+            payable(_owner).sendValue((_chess * _tax) / 100);                        
             payable(_kingOfTheHill).sendValue(_chess * 80 / 100);
-            emit HasWon(_kingOfTheHill, _chess * 80 / 100);                              // le roi aussi
-            _chess = ((address(this).balance - msg.value) * 3);                          // on met le reste dans le pot pour la nouvelle partie
-            _balances[msg.sender] = msg.value - (_chess / 3 * 2);                        // on renvoie le surplus au nouveau premier roi
+            emit HasWon(_kingOfTheHill, _chess * 80 / 100);
+            _chess = ((address(this).balance - msg.value) * 3);
+            _balances[msg.sender] = msg.value - (_chess / 3 * 2);
             
-        } else {                                                                         // faite place au nouveau roi !
+        } else {
             _chess += msg.value;
         }
         _kingBlocks = block.number;
