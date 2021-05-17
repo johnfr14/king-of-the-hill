@@ -59,7 +59,7 @@ contract KingOfTheHill {
      *      NEW KING !
      * 
      *      1.We reset all the king's status [_maxbid, _potTotal, _kingBlocks, _kingOfTheHill]
-    */       
+     */       
              
     function iAmTheKing() public payable {
         require(msg.value >= (_chess * 2), "KingOfTheHill: you must put twice higher than the current king to be king");
