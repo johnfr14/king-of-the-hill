@@ -7,16 +7,16 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contr
 
 /** @title King of the hill */
 contract KingOfTheHill {
-   
+
     using Address for address payable;
     
     mapping(address => uint256) private _balances;
     
-    // variable states concernant que le owner
+    // states concerning the owner only
     address private _owner;
     uint256 private _profit;
     
-    // variable states initialisé au lors du constructor
+    // states initialized in the constructor
     uint private _tax; //                   : the tax that will be given to the owner for each game.
     uint256 private _winningBlocks; //      : the required numbers of blocks resolved, to win the game.
     uint private _kingBlocks; //            : the block where the last king has took position.
@@ -63,15 +63,15 @@ contract KingOfTheHill {
         require(msg.value >= (_chess * 2), "KingOfTheHill: you must put twice higher than the current king to be king");
         require(msg.sender != _kingOfTheHill, "KingOfTheHill: you are already the boss ;)");
         
-        if(block.number - _kingBlocks > _winningBlocks && _kingBlocks != 0) {            // le roi a GAGNE 
-            _profit += (_chess * _tax) / 100;                                            // on compte les profits total réalisé
-            payable(_owner).sendValue((_chess * _tax) / 100);                            // le createur récupere ses profits
+        if(block.number - _kingBlocks > _winningBlocks && _kingBlocks != 0) {            
+            _profit += (_chess * _tax) / 100;                                          
+            payable(_owner).sendValue((_chess * _tax) / 100);                        
             payable(_kingOfTheHill).sendValue(_chess * 80 / 100);
-            emit HasWon(_kingOfTheHill, _chess * 80 / 100);                              // le roi aussi
-            _chess = ((address(this).balance - msg.value) * 3);                          // on met le reste dans le pot pour la nouvelle partie
-            _balances[msg.sender] = msg.value - (_chess / 3 * 2);                        // on renvoie le surplus au nouveau premier roi
+            emit HasWon(_kingOfTheHill, _chess * 80 / 100);
+            _chess = ((address(this).balance - msg.value) * 3);
+            _balances[msg.sender] = msg.value - (_chess / 3 * 2);
             
-        } else {                                                                         // faite place au nouveau roi !
+        } else {
             _chess += msg.value;
         }
         _kingBlocks = block.number;
@@ -97,7 +97,6 @@ contract KingOfTheHill {
         _kingBlocks = 0;
     }
     
-    
     /**
      * @dev withdraw balance :
      *      withdraw the extra ether.
@@ -109,6 +108,7 @@ contract KingOfTheHill {
         payable(msg.sender).sendValue(amount);
         emit Withdrew(msg.sender, amount);
     }
+    
     /**
      * @dev calls kingHasWon 
      * @return : return true or false depending if the king Has won the game
@@ -147,6 +147,5 @@ contract KingOfTheHill {
      */
     function seePot() public view returns(uint256) {
         return (_chess);
-    }
-    
+    }   
 }
