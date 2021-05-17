@@ -2,7 +2,7 @@
 ![KOTH](./koth.png)
 
 
-**url contract deployment** : https://rinkeby.etherscan.io/address/0x1e096c89701b52d61fb53adfcc508ec736d64c21 \n
+**url contract deployment** : https://rinkeby.etherscan.io/address/0x1e096c89701b52d61fb53adfcc508ec736d64c21     
 **network** : rinkeby
 
 ## Rules ##
@@ -24,7 +24,7 @@ higher from the player the rest of his money will be given back in his balance.
 Otherwise the winner will also be able to claim his reward then the contract will have to wait a valiant
 warrior to take the chess that contain the seed.
 
-## The game ##
+## The game 
 
 ```js
 // SPDX-License-Identifier: GPL-3.0
